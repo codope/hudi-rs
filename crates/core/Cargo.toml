@@ -78,6 +78,11 @@ percent-encoding = { workspace = true }
 
 [dev-dependencies]
 hudi-test = { path = "../test" }
+criterion = { version = "~0.5" }
+
+[[bench]]
+name = "split_slices"
+harness = false
 
 [features]
 datafusion = [

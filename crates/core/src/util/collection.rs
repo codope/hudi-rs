@@ -28,3 +28,54 @@ where
         target.entry(key.clone()).or_insert_with(|| value.clone());
     }
 }
+
+/// Split a slice into at most `n` chunks by cloning elements.
+///
+/// - Returns an empty vector if `items` is empty.
+/// - If `n == 0`, it behaves as `n == 1`.
+pub fn split_into_n_chunks_clone<T: Clone>(items: &[T], n: usize) -> Vec<Vec<T>> {
+    if items.is_empty() {
+        return Vec::new();
+    }
+
+    let n = std::cmp::max(1, n);
+    let chunk_size = items.len().div_ceil(n);
+    items
+        .chunks(chunk_size)
+        .map(|chunk| chunk.to_vec())
+        .collect()
+}
+
+/// Split a vector into at most `n` chunks by moving elements.
+///
+/// - Returns an empty vector if `items` is empty.
+/// - If `n == 0`, it behaves as `n == 1`.
+/// - Preserves input order.
+pub fn split_into_n_chunks_move<T>(items: Vec<T>, n: usize) -> Vec<Vec<T>> {
+    if items.is_empty() {
+        return Vec::new();
+    }
+
+    let n = std::cmp::max(1, n);
+    let total = items.len();
+    let chunk_size = total.div_ceil(n);
+
+    // Fast path: no split requested
+    if chunk_size >= total {
+        return vec![items];
+    }
+
+    let mut result: Vec<Vec<T>> = Vec::with_capacity(n);
+    let mut current: Vec<T> = Vec::with_capacity(chunk_size);
+    for item in items.into_iter() {
+        current.push(item);
+        if current.len() == chunk_size {
+            result.push(current);
+            current = Vec::with_capacity(chunk_size);
+        }
+    }
+    if !current.is_empty() {
+        result.push(current);
+    }
+    result
+}
